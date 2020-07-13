@@ -8,13 +8,17 @@ character-set-server=utf8mb4
 collation-server=utf8mb4_unicode_ci
 init-connect='SET NAMES utf8mb4'
 
+# By default we only accept connections from localhost
+
 max_connections = 1000
 
-#log-error  = /var/log/mysql/error.log
-# By default we only accept connections from localhost
 #bind-address   = 127.0.0.1
 # Disabling symbolic-links is recommended to prevent assorted security risks
-server-id=4
-#log-bin=s2-bin.log
-#sync_binlog=1
-relay_log=mysql-relay
+
+#给数据库服务的唯一标识，一般为大家设置服务器Ip的末尾号
+server-id=2
+log-bin=master-bin
+log-bin-index=master-bin.index
+binlog_format=ROW
+
+log_slave_updates=1

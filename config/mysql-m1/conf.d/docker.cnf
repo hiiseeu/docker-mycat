@@ -16,6 +16,9 @@ max_connections = 1000
 # Disabling symbolic-links is recommended to prevent assorted security risks
 
 #给数据库服务的唯一标识，一般为大家设置服务器Ip的末尾号
-server-id=2
+server-id=1
 log-bin=master-bin
 log-bin-index=master-bin.index
+binlog_format=ROW
+
+log_slave_updates=1

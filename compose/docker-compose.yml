@@ -1,17 +1,17 @@
 version: '2'
 services:
   m1:
-    image: mysql:8.0.20
+    image: mysql:5.7
     container_name: m1
     volumes:
       - ../config/mysql-m1/conf.d/docker.cnf:/etc/mysql/conf.d/docker.cnf:ro
-      #- /etc/localtime:/etc/localtime:ro
+      # - /etc/localtime:/etc/localtime:ro
       - ../config/hosts:/etc/hosts:ro
     ports:
       - "3309:3306"
     networks:
       mysql:
-        ipv4_address: 172.18.0.2
+        ipv4_address: 10.0.0.2
     ulimits:
       nproc: 65535
     hostname: m1
@@ -23,7 +23,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: m1test
   s1:
-    image: mysql:8.0.20
+    image: mysql:5.7
     container_name: s1
     volumes:
       - ../config/mysql-s1/conf.d/docker.cnf:/etc/mysql/conf.d/docker.cnf:ro
@@ -33,7 +33,7 @@ services:
       - "3307:3306"
     networks:
       mysql:
-        ipv4_address: 172.18.0.3
+        ipv4_address: 10.0.0.3
     links:
       - m1
     ulimits:
@@ -47,11 +47,11 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: s1test
   s2:
-    image: mysql:8.0.20
+    image: mysql:5.7
     container_name: s2
     volumes:
       - ../config/mysql-s2/conf.d/docker.cnf:/etc/mysql/conf.d/docker.cnf:ro
-      #- /etc/localtime:/etc/localtime:ro
+      # - /etc/localtime:/etc/localtime:ro
       - ../config/hosts:/etc/hosts:ro
     ports:
       - "3308:3306"
@@ -59,7 +59,7 @@ services:
       - m1
     networks:
       mysql:
-        ipv4_address: 172.18.0.4
+        ipv4_address: 10.0.0.4
     ulimits:
       nproc: 65535
     hostname: s2
@@ -70,13 +70,61 @@ services:
       - '--character-set-server=utf8mb4'
     environment:
       MYSQL_ROOT_PASSWORD: s2test
+  m2:
+    image: mysql:5.7
+    container_name: m2
+    volumes:
+      - ../config/mysql-m2/conf.d/docker.cnf:/etc/mysql/conf.d/docker.cnf:ro
+      # - /etc/localtime:/etc/localtime:ro
+      - ../config/hosts:/etc/hosts:ro
+    ports:
+      - "3310:3306"
+    networks:
+      mysql:
+        ipv4_address: 10.0.0.6
+    links:
+      - m1
+    ulimits:
+      nproc: 65535
+    hostname: m2
+    mem_limit: 512m
+    restart: always
+    command: 
+      - '--default-authentication-plugin=mysql_native_password'
+      - '--character-set-server=utf8mb4'
+    environment:
+      MYSQL_ROOT_PASSWORD: m2test
+  s3:
+    image: mysql:5.7
+    container_name: s3
+    volumes:
+      - ../config/mysql-s3/conf.d/docker.cnf:/etc/mysql/conf.d/docker.cnf:ro
+      # - /etc/localtime:/etc/localtime:ro
+      - ../config/hosts:/etc/hosts:ro
+    ports:
+      - "3311:3306"
+    links:
+      - m2
+    networks:
+      mysql:
+        ipv4_address: 10.0.0.7
+    ulimits:
+      nproc: 65535
+    hostname: s3
+    mem_limit: 512m
+    restart: always
+    command: 
+      - '--default-authentication-plugin=mysql_native_password'
+      - '--character-set-server=utf8mb4'
+    environment:
+      MYSQL_ROOT_PASSWORD: s3test
   mycat:
     build: ./mycat
     container_name: mycat
     volumes:
       - ../config/mycat/:/mycat/conf/:ro
       - ../log/mycat-logs/:/mycat/logs/:rw
-      #- /etc/localtime:/etc/localtime:ro
+      # - /etc/localtime:/etc/localtime:ro
       - ../config/hosts:/etc/hosts:ro
     ports:
       - "8066:8066"
@@ -85,9 +133,11 @@ services:
       - m1
       - s1
       - s2
+      - m2
+      - s3
     networks:
       mysql:
-        ipv4_address: 172.18.0.5
+        ipv4_address: 10.0.0.5
     ulimits:
       nproc: 65535
     hostname: mycat
@@ -99,5 +149,5 @@ networks:
     ipam:
       driver: default
       config:
-      - subnet: 172.18.0.0/24
-        gateway: 172.18.0.1
+      - subnet: 10.0.0.0/24
+        gateway: 10.0.0.1
